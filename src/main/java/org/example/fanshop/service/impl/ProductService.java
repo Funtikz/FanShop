@@ -37,7 +37,6 @@ public class ProductService {
         return minioService.getImagesByProductId(productId);
     }
 
-    public Page
 
 
     public Product toEntity(ProductRequestDto dto){
