@@ -1,0 +1,51 @@
+#spring
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/FanShop
+    username: postgres
+    password: 3200558819
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto:  update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  #  ????????? ????????????? ??????? ???????????? ?????
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+minio:
+  url: http://localhost:9000
+  accessKey: admin
+  secretKey: password
+  bucketName: fanshop-images
+
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username:
+#    password:
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+
+
+#????????? ???????????
+logging:
+  level:
+    root: info
+  file:
+    name: logs/app.log
+    path: logs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 10
