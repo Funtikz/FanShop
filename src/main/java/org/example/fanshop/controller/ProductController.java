@@ -1,6 +1,7 @@
 package org.example.fanshop.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/create")
+    @Operation(summary = "Создание продукта")
     public ResponseEntity<ProductResponseDto> createProduct(
             @Valid @RequestPart(value = "productData") String productData,
             @RequestPart(value = "images") List<MultipartFile> images
@@ -40,6 +42,7 @@ public class ProductController {
         throw  new ValidationException();
     }
 
+    @Operation(summary = "Получение изображений продукта по id")
     @GetMapping("/{productId}/images")
     public ResponseEntity<List<String>> getProductImages(@PathVariable Long productId) {
         List<String> images = productService.getProductImages(productId);
