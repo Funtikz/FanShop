@@ -6,6 +6,8 @@ import org.example.fanshop.entity.Image;
 import org.example.fanshop.entity.Product;
 import org.example.fanshop.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +27,32 @@ public class MinioService {
     private String bucketName;
 
 
-    // 1️⃣ Загрузка изображения (без привязки к товару)
+
+
+    public Image uploadSingleImage(MultipartFile file) {
+        try {
+            String imageId = UUID.randomUUID().toString();
+
+            // Загружаем изображение в Minio
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(imageId)
+                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build()
+            );
+
+            Image image = new Image();
+            image.setMinioId(imageId);
+            image.setOriginalFilename(file.getOriginalFilename());
+
+            return imageRepository.save(image);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при загрузке изображения", e);
+        }
+    }
+
     public List<Image> uploadImage(List<MultipartFile> files, Product product) {
         List<Image> images = new ArrayList<>();
         for (MultipartFile file : files){
@@ -54,8 +81,26 @@ public class MinioService {
     }
 
 
-    public List<String> getImagesByProductId(Long productId) {
-        List<Image> images = imageRepository.findByProductId(productId);
+    public List<String> getImagesByImageId(Long imageId) {
+        Image image = imageRepository.findById(imageId).orElseThrow(() -> new UsernameNotFoundException("Image not found"));
+        List<String> base64Images = new ArrayList<>();
+        try (InputStream stream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(image.getMinioId())
+                        .build()
+        )) {
+            byte[] bytes = stream.readAllBytes();
+            String base64 = Base64.getEncoder().encodeToString(bytes);
+            base64Images.add(base64);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при получении изображения: " + image.getMinioId(), e);
+        }
+        return base64Images;
+    }
+
+    public List<String> getImagesByProductId(Long imageId) {
+        List<Image> images = imageRepository.findByProductId(imageId);
         List<String> base64Images = new ArrayList<>();
 
         for (Image image : images) {
@@ -113,7 +158,6 @@ public class MinioService {
                             .build()
             );
 
-            imageRepository.deleteById(Long.parseLong(imageId));
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при удалении изображения", e);
         }

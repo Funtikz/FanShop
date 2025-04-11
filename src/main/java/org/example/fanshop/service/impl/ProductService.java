@@ -11,10 +11,13 @@ import org.example.fanshop.entity.Product;
 import org.example.fanshop.entity.ProductVariant;
 import org.example.fanshop.minio.MinioService;
 import org.example.fanshop.repository.ProductRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Service
@@ -31,6 +34,12 @@ public class ProductService {
         save.setImages(images);
         Product save1 = repository.save(save);
         return toDto(save1);
+    }
+
+    public List<ProductResponseDto> getAll(Pageable pageable){
+        return repository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     public List<String> getProductImages(Long productId) {

@@ -26,7 +26,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -38,8 +37,8 @@ public class SecurityConfig {
                                 "services/category/**",
                                 "/v3/api-docs/**",  // Открываем доступ к API-документации
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/api/products/**")
+                                "/swagger-ui.html"
+                        ,"api/football/**")
                         .permitAll()
 
                         .anyRequest().authenticated())
@@ -52,7 +51,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173/","http://localhost:63343")); // Указываем разрешенные источники
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173/","http://localhost:63342", "http://localhost:63343")); // Указываем разрешенные источники
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
