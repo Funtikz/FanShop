@@ -44,7 +44,7 @@ public class NewsController {
         response.setHeading(heading);
         response.setDescription(description);
 
-        newsService.updateNews(response, image);
+        newsService.updateNews(response, image); // Передаем ID новости и новое изображение, если оно есть
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
