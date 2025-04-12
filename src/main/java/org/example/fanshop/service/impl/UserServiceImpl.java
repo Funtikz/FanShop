@@ -5,9 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.fanshop.dto.user.UserAuthDto;
-import org.example.fanshop.dto.user.UserRegistrationDto;
-import org.example.fanshop.dto.user.UserResponseDto;
+import org.example.fanshop.dto.user.*;
+import org.example.fanshop.entity.Cart;
 import org.example.fanshop.entity.User;
 import org.example.fanshop.entity.UserImage;
 import org.example.fanshop.exceptions.AuthenticationException;
@@ -40,6 +39,58 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserImageRepository userImageRepository;
+
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordDto dto) {
+        User user = findById(userId);
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            log.warn("Неверный текущий пароль для пользователя с ID {}", userId);
+            throw new DifferentPassword();
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+        log.info("Пароль пользователя с ID {} успешно изменён", userId);
+    }
+
+    @Transactional
+    public void changeEmail(Long userId, ChangeEmailDto dto) {
+        User user = findById(userId);
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            log.warn("Неверный текущий пароль при попытке смены email пользователя с ID {}", userId);
+            throw new DifferentPassword();
+        }
+
+        user.setEmail(dto.getNewEmail());
+        userRepository.save(user);
+        log.info("Email пользователя с ID {} успешно изменён", userId);
+    }
+
+    @Transactional
+    public void changePhoneNumber(Long userId, ChangePhoneDto dto) {
+        User user = findById(userId);
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            log.warn("Неверный текущий пароль при попытке смены номера телефона пользователя с ID {}", userId);
+            throw new DifferentPassword();
+        }
+
+        // Проверка на уникальность номера
+        Optional<User> userWithSamePhone = userRepository.findByPhoneNumber(dto.getNewPhoneNumber());
+        if (userWithSamePhone.isPresent() && !userWithSamePhone.get().getId().equals(userId)) {
+            log.error("Номер телефона {} уже используется другим пользователем", dto.getNewPhoneNumber());
+            throw new UserAlreadyExistsException("Такой номер уже используется");
+        }
+
+        user.setPhoneNumber(dto.getNewPhoneNumber());
+        userRepository.save(user);
+        log.info("Номер телефона пользователя с ID {} успешно изменён", userId);
+    }
+
+
 
 
     //Вход для User и установка в куки
@@ -94,6 +145,10 @@ public class UserServiceImpl implements UserService {
         }
         entity.setRoles(userDto.getRoles());
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+
+        Cart cart = new Cart();
+        cart.setUser(entity);
+        entity.setCart(cart);
         User currentUser = userRepository.save(entity);
         setDefaultImage(currentUser);
 
@@ -139,6 +194,19 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Пользователь не авторизован");
         }
     }
+
+    @Transactional
+    public void logout(HttpServletResponse response) {
+        // Удаляем JWT токен из куки, установив истекшую дату
+        Cookie cookie = new Cookie("jwt-auth-token", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/"); // Путь, который будет доступен для удаления куки
+        cookie.setMaxAge(0); // Устанавливаем куки с истекшим сроком действия
+        response.addCookie(cookie);
+
+        log.info("Пользователь успешно вышел из системы, куки удалены.");
+    }
+
 
     public List<User> getAll(){
         return userRepository.findAll();

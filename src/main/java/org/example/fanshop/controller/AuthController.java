@@ -4,9 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.example.fanshop.dto.user.UserAuthDto;
-import org.example.fanshop.dto.user.UserRegistrationDto;
-import org.example.fanshop.dto.user.UserResponseDto;
+import org.example.fanshop.dto.user.*;
 import org.example.fanshop.service.impl.UserServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +34,39 @@ public class AuthController {
     @GetMapping("/current-user")
     public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal Object principal) {
         return  new ResponseEntity<>(userServiceImpl.toDto(userServiceImpl.getCurrentUser(principal)), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        userServiceImpl.logout(response);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @Operation(summary = "Сменить пароль")
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal Object principal,
+                                            @RequestBody @Valid ChangePasswordDto dto) {
+        Long userId = userServiceImpl.getCurrentUser(principal).getId();
+        userServiceImpl.changePassword(userId, dto);
+        return ResponseEntity.ok("Пароль успешно изменён");
+    }
+
+    @Operation(summary = "Сменить email")
+    @PutMapping("/change-email")
+    public ResponseEntity<?> changeEmail(@AuthenticationPrincipal Object principal,
+                                         @RequestBody @Valid ChangeEmailDto dto) {
+        Long userId = userServiceImpl.getCurrentUser(principal).getId();
+        userServiceImpl.changeEmail(userId, dto);
+        return ResponseEntity.ok("Email успешно изменён");
+    }
+
+    @Operation(summary = "Сменить номер телефона")
+    @PutMapping("/change-phone")
+    public ResponseEntity<?> changePhone(@AuthenticationPrincipal Object principal,
+                                         @RequestBody @Valid ChangePhoneDto dto) {
+        Long userId = userServiceImpl.getCurrentUser(principal).getId();
+        userServiceImpl.changePhoneNumber(userId, dto);
+        return ResponseEntity.ok("Номер телефона успешно изменён");
     }
 
     @Operation(summary = "Просто так надо :) ")

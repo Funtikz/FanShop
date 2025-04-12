@@ -1,7 +1,12 @@
 package org.example.fanshop.entity.enums;
 
 public enum ProductType {
-    CLOTHING,
-
-    ACCESSORY
+    T_SHIRTS,
+    CAPS,
+    HOODIES,
+    SHOPPERS,
+    SCARFS,
+    BADGES,
+    TRINKETS,
+    POSTERS;
 }

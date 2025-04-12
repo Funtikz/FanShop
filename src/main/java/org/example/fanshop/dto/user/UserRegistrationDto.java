@@ -1,6 +1,7 @@
 package org.example.fanshop.dto.user;
 
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -32,6 +33,7 @@ public class UserRegistrationDto {
     private String phoneNumber;
 
     @NotBlank(message = "Почта не может быть пустой")
+    @Email
     private String email;
 
 

@@ -27,6 +27,31 @@ public class MinioService {
     private String bucketName;
 
 
+    public Image uploadSingleImageForProduct(MultipartFile file, Product product) {
+        try {
+            String imageId = UUID.randomUUID().toString();
+
+            // Загружаем изображение в Minio
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(imageId)
+                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build()
+            );
+
+            Image image = new Image();
+            image.setMinioId(imageId);
+            image.setOriginalFilename(file.getOriginalFilename());
+            image.setProduct(product);
+
+            return imageRepository.save(image);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при загрузке изображения", e);
+        }
+    }
+
 
 
     public Image uploadSingleImage(MultipartFile file) {
