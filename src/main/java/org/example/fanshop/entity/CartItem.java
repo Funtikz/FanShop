@@ -3,6 +3,7 @@ package org.example.fanshop.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.fanshop.entity.enums.ClothingSize;
 
 @Entity
 @Getter
@@ -21,6 +22,8 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Product product;
+
+    private ClothingSize clothingSize;
 
     private int quantity;
 
